@@ -84,7 +84,7 @@ def generateDf():
             #    rows.append([year, week, np.random.normal(200, 100) ])
             #if week > 37:
             #    rows.append([year, week, np.random.normal(250, 150) ])
-            rows.append([year, week, np.random.normal(loc=100,scale=np.random.randint(50,100)) ])
+            rows.append([year, week, np.random.normal(loc=150,scale=np.random.randint(50,100)) ])
             
     df = pd.DataFrame(rows, columns=['year','week','ratio'])
     #df['ratio'] = df['ratio'].apply(np.int64)
@@ -108,6 +108,9 @@ def generateDf():
 
 def displayMatplotLib(df):
     global mycmaps
+    global colName0
+    global colName1
+
     fig = plt.figure()
     fig, ax = plt.subplots(1,1, figsize=(20,20))
     heatplot = ax.imshow(df, cmap=mycmaps)
@@ -121,9 +124,9 @@ def displayMatplotLib(df):
     tick_spacing = 1
     ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
     ax.yaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
-    ax.set_title("displayMatplotLib")
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Week')
+    ax.set_title("MATPLOTLIB")
+    ax.set_xlabel(colName0)
+    ax.set_ylabel(colName1)
     
     st.pyplot(fig)
 
@@ -132,7 +135,7 @@ def displaySeaborn(df):
     global mycmaps
     fig = plt.figure(figsize=(16,8))
     r = sns.heatmap(df, cmap=mycmaps)
-    r.set_title("displaySeaborn")
+    r.set_title("SEABORN")
     st.pyplot(fig)
 
 
@@ -143,9 +146,9 @@ def displayGgplot(df):
     global myscheme
 
     fig = plt.figure()
-    p = p9.ggplot(df, p9.aes('year', 'week')) + p9.geom_tile(p9.aes(fill='ratio'))\
+    p = p9.ggplot(df, p9.aes(df.columns[0],df.columns[1])) + p9.geom_tile(p9.aes(fill=df.columns[2]))\
         + p9.scale_fill_gradientn(colors=myscheme) \
-        + p9.ggtitle("displayGgplot") \
+        + p9.ggtitle("GGPLOT") \
         + p9.theme(figure_size = (12, 6))
     st.pyplot(p9.ggplot.draw(p))
 
@@ -175,14 +178,14 @@ def displayPloty(df):
     #colorscale = [[0, '#edf8fb'], [.3, '#b3cde3'],  [.6, '#8856a7'],  [1, '#810f7c']]
     global myscheme
     fig = go.Figure( data=go.Heatmap(z=df, x=df.columns, y=df.index, colorscale=myscheme))
-    fig.update_layout(title="displayPloty") 
+    fig.update_layout(title="PLOTY") 
     st.plotly_chart(fig)
 
 
 def displayCufflinks( df):
     #Cufflinks is a third-party wrapper library around Plotly, inspired by the Pandas .plot() API.
     global mycmaps
-    fig = df.T.iplot(title="displayCufflinks", asFigure=True, kind='heatmap', colorscale=mycmaps )
+    fig = df.T.iplot(title="CUFFLINKS", asFigure=True, kind='heatmap', colorscale=mycmaps )
     st.plotly_chart(fig)
 
 
@@ -190,7 +193,11 @@ def displayBokeh(df1, df):
 
     ta0 = time.time()
     global mycmaps
-    hv.extension('bokeh')
+    global colName0
+    global colName1
+    global colName2
+
+    hv.extension('bokeh', 'matplotlib')
     # Bokeh doesn't have its own gradient color maps supported but you can easily use on from matplotlib.
     colormap =cm.get_cmap(mycmaps)
     bokehpalette = [mpl.colors.rgb2hex(m) for m in colormap(np.arange(colormap.N))]
@@ -203,33 +210,43 @@ def displayBokeh(df1, df):
     years = list(df.columns.astype('str'))
     weeks = list(df.index.astype('str'))
 
-    df1['year'] = df1.year.astype('str')
+    #df1[df.columns[0]] = df1[df1.columns[0]].astype('str')
+    #df1['year'] = df1.year.astype('str')
+    df1[colName0] = df1[colName0].astype('str')
 
     source = ColumnDataSource(df1)
 
-    z = figure(title="displayBokeh", x_range=years, y_range=weeks, # tools="hover",
+    z = figure(title="BOKEH", x_range=years, y_range=weeks, # tools="hover",
             toolbar_location='above',  toolbar_sticky=False) #below
 
-    z.rect(x='year', y='week', width=1, height=1, source=source
-        , fill_color={'field': 'ratio', 'transform': mapper}, line_color=None)
+    
+    z.rect(x=colName0, y=colName1, width=1, height=1, source=source
+        , fill_color={'field': colName2, 'transform': mapper}, line_color=None)
 
     color_bar = ColorBar(color_mapper=mapper, major_label_text_font_size="5pt",
                         ticker=BasicTicker(desired_num_ticks=8),
                         formatter=PrintfTickFormatter(format="%d%%"),
                         label_standoff=6, border_line_color=None, location=(0, 0))
     z.add_layout(color_bar, 'right')
-    z.xaxis.axis_label = 'Years'
+    z.xaxis.axis_label = colName0
     z.xaxis.major_label_orientation = "vertical"
     z.xaxis.major_label_text_font_size = "4pt"
     z.yaxis.major_label_text_font_size = "6pt"
-    z.yaxis.axis_label = 'Week'
+    z.yaxis.axis_label = colName1
 
-    output_file("testB.html")
-    save(z)
-    show(z)
-    HtmlFile = open("testB.html", 'r', encoding='utf-8')
-    html = HtmlFile.read() 
-    components.html(html, height = 640) #Default height is 150
+    #output_file("testB.html")
+    #save(z)
+    #show(z)
+    #HtmlFile = open("testB.html", 'r', encoding='utf-8')
+    #html = HtmlFile.read() 
+    #components.html(html, height = 640) #Default height is 150
+
+
+    plot = pn.panel(z)
+    path = pathlib.Path(__file__).parent/'testB.html'
+    plot.save(path, embed=True, max_states=100)
+    html=path.read_text()
+    components.html(html, height=640)
 
 
     ta1 = time.time()
@@ -238,10 +255,11 @@ def displayBokeh(df1, df):
         st.write('___')
         st.write('##')
 
+
 def displayHoloviews(df):
     hv.extension('bokeh', 'matplotlib')
     global mycmaps
-    heatmap = hv.HeatMap(df, label="displayHoloviews" )
+    heatmap = hv.HeatMap(df, label="HOLOVIEWS" )
     overlay = (heatmap)
     overlay.opts(
     opts.HeatMap(width=680, height=400, tools=['hover'], colorbar=True, logz=True, cmap=mycmaps, 
@@ -260,7 +278,6 @@ def displayHoloviews(df):
     components.html(html, height=640)
 
 
-
 def displayAltair(df):
     #chart = alt.Chart(df).mark_text(
     #        ).encode(
@@ -277,22 +294,28 @@ def displayAltair(df):
     #        )
     #st.altair_chart(chart)
 
-    xx = df['year'].nunique()
-    yy = df['week'].nunique()
+    xx = df[df.columns[0]].nunique()
+    yy = df[df.columns[1]].nunique()
     #myscheme = 'greenblue'
     myfill='#ebf7f1'
-    myTooltip=['year', 'week', 'ratio:Q']
+
+
+    col0 = df.columns[0]
+    col1 = df.columns[1]
+    col2 = df.columns[2] 
+
+    myTooltip=[col0, col1, col2+':Q']
 
     #df.sort(by=['year', 'week'], ascending=[True, False], inplace= True)
     global myscheme
     #myscheme  = [ '#edf8fb', '#b3cde3', '#8856a7', '#810f7c']
     #myscheme2 = [ '#9ebcda', '#8c6bb1', '#88419d', '#6e016b']
     factor = min(xx, yy)/6
-    chart = alt.Chart(df, title='displayAltair').mark_rect( #stroke='black', strokeWidth=0.5
+    chart = alt.Chart(df, title='ALTAIR').mark_rect( #stroke='black', strokeWidth=0.5
     ).encode(
-        x='year:O',
-        y='week:O',
-        color=alt.Color("ratio:Q", scale=alt.Scale(range=[myscheme[0], myscheme[len(myscheme) // 2], myscheme[-1]]) ),  #'ratio:Q'
+        x=col0 + ':O',
+        y=col1 + ':O',
+        color=alt.Color(col2+':Q' , scale=alt.Scale(range=[myscheme[0], myscheme[len(myscheme) // 2], myscheme[-1]]) ),  #'ratio:Q'
         tooltip=myTooltip
         #stroke='black', strokeWidth=2
         #strokeWidth=alt.StrokeWidthValue(0, condition=alt.StrokeWidthValue(3, selection=highlight.name))
@@ -320,7 +343,7 @@ def displayAltair(df):
 
 
 
-##def displayLightning(df):
+#def displayLightning(df):
     #lgn = Lightning(ipython=True, host='http://public.lightning-viz.org')
     #lgn = Lightning(host='https://herokuappname.herokuapp.com')
     
@@ -386,13 +409,13 @@ def sepS():
 def getFile():
     sepS()
     myfile = None
-    myfile  = st.sidebar.file_uploader("open file:", 
+    myfile  = st.sidebar.file_uploader("📂 open file:", 
                                 accept_multiple_files=False,
                                 type='csv')
     sepS()   
     return myfile
 
-@st.cache(suppress_st_warning=True, allow_output_mutation=True)
+@st.cache(suppress_st_warning=True)
 def onStart():
     # This function will only be run the first time it's called
     return generateDf()
@@ -401,11 +424,16 @@ def onStart():
 # ------------------------------------------------------------------------------
 def main():
 
-    st.title("Heatmaps in Python:")
-    st.subheader("try the different libraries and palettes")
+    st.title("Heatmaps for 🐍Python:")
+    st.subheader("Try different libraries and palettes")
+    st.write('Some libraries use a matrix to generate the heatmap, therefore the original dataset is pivoted to generate it. \
+                As a preview, we will show the original version of the dataset, and the version converted into a matrix.')
+    st.write('In case of using an input .CSV file, it must respect the order **Data X**; **Data Y**; **Value**.\
+                The name of the columns does not matter.')
+
 
     cmaps = [
-            'Purples', 'Greys', 'Blues', 'Greens', 'Oranges', 'Reds',           #Sequential
+            'Blues', 'Oranges', 'Purples', 'Greys', 'Greens', 'Reds',           #Sequential
             'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
             'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn',
             'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',         #Sequential (2)
@@ -425,10 +453,15 @@ def main():
 
     global mycmaps 
     global myscheme
+    global colName0
+    global colName1
+    global colName2
 
     df, dfmat = onStart()
 
-    mycmaps = st.sidebar.selectbox('Select Matplotlib Colormap:', cmaps)
+    mycmaps = st.sidebar.selectbox('🎨 Select Palette (Matplotlib):', cmaps)
+    link = "[matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html)"
+    st.sidebar.markdown(link, unsafe_allow_html=True)
     myscheme = cmap2rgb(mycmaps)
     myfile = getFile()
 
@@ -440,7 +473,7 @@ def main():
         dfmat = df.pivot(df.columns[1], df.columns[0], df.columns[2])
 
     
-    if st.sidebar.button('Generate Random'):
+    if st.sidebar.button('🎲 Generate Random'):
         if myfile is None:
             df, dfmat = generateDf()
             
@@ -451,17 +484,23 @@ def main():
     #    file = (f'<a href="data:file/csv;base64,{base}" download="%s.csv">Download file</a>' % (name))
     #    return file
     #st.markdown(download_csv('Data Frame',df), unsafe_allow_html=True)
+    
+    colName0 = df.columns[0]
+    colName1 = df.columns[1]
+    colName2 = df.columns[2] 
 
     sep()
     col1, col2 = st.beta_columns(2)
-    col1.write("*Raw* Dataframe preview:")
+    col1.write("*Original* Dataset preview:")
     col1.write(df.head(15))
-    col2.write("*Matrix* Dataframe preview:")
+    col2.write("*Matrix* Dataset preview:")
     col2.write(dfmat.head(15))
     sep()
 
     #displayLightning(dfmat) #doesnt work
     #displayBqPlot(dfmat) #doesnt work
+    if st.checkbox("display Altair"):
+        timing(displayAltair, df)
     if st.checkbox("display Holoviews"):
         timing(displayHoloviews, df)
     if st.checkbox("display Bokeh"):
@@ -476,8 +515,7 @@ def main():
         timing(displayPloty, dfmat)
     if st.checkbox("display Cufflinks"):
         timing(displayCufflinks, dfmat)
-    if st.checkbox("display Altair"):
-        timing(displayAltair, df)
+
 
 
 
