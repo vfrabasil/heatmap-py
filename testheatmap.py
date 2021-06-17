@@ -60,7 +60,7 @@ import holoviews as hv
 from holoviews import opts
 #from holoviews import opts, dim
 
-from lightning import Lightning
+#from lightning import Lightning
 import time
 
 debugInfo = True
@@ -320,15 +320,16 @@ def displayAltair(df):
 
 
 
-def displayLightning(df):
+##def displayLightning(df):
     #lgn = Lightning(ipython=True, host='http://public.lightning-viz.org')
     #lgn = Lightning(host='https://herokuappname.herokuapp.com')
-    lgn = Lightning(local=True) #this is the server we are going to use.
+    
     #lgn = Lightning()
 
-    st.write(lgn.matrix(df, colormap='BuPu', 
-        row_labels=list(df.index.values), 
-        column_labels=list(df.columns.values), width=1000, description="displayLightning") )
+    ##lgn = Lightning(local=True) #this is the server we are going to use.
+    ##st.write(lgn.matrix(df, colormap='BuPu', 
+    ##    row_labels=list(df.index.values), 
+    ##    column_labels=list(df.columns.values), width=1000, description="displayLightning") )
 
     #data = np.random.random(100)
     ## typical plot
