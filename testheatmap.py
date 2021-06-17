@@ -415,10 +415,10 @@ def getFile():
     sepS()   
     return myfile
 
-@st.cache(suppress_st_warning=True)
-def onStart():
-    # This function will only be run the first time it's called
-    return generateDf()
+#@st.cache(suppress_st_warning=True)
+#def onStart():
+#    # This function will only be run the first time it's called
+#    return generateDf()
 
 
 # ------------------------------------------------------------------------------
@@ -457,7 +457,7 @@ def main():
     global colName1
     global colName2
 
-    df, dfmat = onStart()
+    df, dfmat = generateDf()
 
     mycmaps = st.sidebar.selectbox('🎨 Select Palette (Matplotlib):', cmaps)
     link = "[matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html)"
