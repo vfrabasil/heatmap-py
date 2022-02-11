@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from os import truncate, write
 import pathlib
 import panel as pn
@@ -14,7 +15,7 @@ import seaborn as sns
 import streamlit as st
 import altair as alt
 from altair import Row, Column, Chart, Text, Scale, Color
-from streamlit.report_thread import add_report_ctx
+#from streamlit.report_thread import add_report_ctx
 import streamlit.components.v1 as components
 import base64
 
@@ -65,7 +66,7 @@ import time
 
 debugInfo = True
 
-
+mylogo = 'Screenshot.png'
 
 
 #Modo de Ejecucion:
@@ -424,12 +425,20 @@ def getFile():
 # ------------------------------------------------------------------------------
 def main():
 
-    st.title("Heatmaps for 🐍Python:")
-    st.subheader("Try different libraries and palettes")
-    st.write('Some libraries use a matrix to generate the heatmap, therefore the original dataset is pivoted to generate it. \
-                As a preview, we will show the original version of the dataset, and the version converted into a matrix.')
-    st.write('In case of using an input .CSV file, it must respect the order **Data X**; **Data Y**; **Value**.\
-                The name of the columns does not matter.')
+    st.sidebar.image(mylogo, use_column_width=True)
+    sepS()
+    #st.markdown("<style> .css-fg4pbf {background: #d8ecf2;}</style>",unsafe_allow_html=True )
+    st.markdown("<style> .css-zbg2rx {background-color: #cbdaf9;}</style>",unsafe_allow_html=True )
+
+
+    st.title("Heatmaps for Python 🐍:")
+    st.subheader("Test different libraries and palettes using the same dataset")
+    with st.expander("About the App :", expanded=False):
+        st.write('Evaluate which one fits best in terms of display and speed.')
+        st.write('Some libraries use a matrix to generate the heatmap, therefore the original dataset is pivoted to generate it. \
+                    As a preview, we will show the original version of the dataset, and the version converted into a matrix.')
+        st.write('In case of using an input .CSV file, it must respect the order **Data X**; **Data Y**; **Value**.\
+                    The name of the columns does not matter.')
 
 
     cmaps = [
@@ -459,8 +468,12 @@ def main():
 
     df, dfmat = generateDf()
 
-    mycmaps = st.sidebar.selectbox('🎨 Select Palette (Matplotlib):', cmaps)
-    link = "[matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html)"
+
+
+
+
+    mycmaps = st.sidebar.selectbox('🎨 Select Palette (Names based in Matplotlib):', cmaps)
+    link = "🔗 [matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html)"
     st.sidebar.markdown(link, unsafe_allow_html=True)
     myscheme = cmap2rgb(mycmaps)
     myfile = getFile()
@@ -477,6 +490,12 @@ def main():
         if myfile is None:
             df, dfmat = generateDf()
             
+    sepS()
+
+    with st.sidebar.expander("About:", expanded=False):
+        link = " Made by [Victor Frabasil](https://www.linkedin.com/in/victorfrabasil/)"
+        st.sidebar.markdown(link, unsafe_allow_html=True)
+
     #def download_csv(name, df):
     #    #csv = df.to_csv(index=False)
     #    csv = df.to_csv(sep=";", index=False)
@@ -490,7 +509,7 @@ def main():
     colName2 = df.columns[2] 
 
     sep()
-    col1, col2 = st.beta_columns(2)
+    col1, col2 = st.columns(2)
     col1.write("*Original* Dataset preview:")
     col1.write(df.head(15))
     col2.write("*Matrix* Dataset preview:")

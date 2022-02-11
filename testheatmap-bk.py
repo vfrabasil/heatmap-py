@@ -1,35 +1,49 @@
-from os import truncate, write
-import pathlib
-import panel as pn
-from altair.vegalite.v4.schema.channels import Tooltip
 import numpy as np
 import pandas as pd
-from pylab import *
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import plotly.express as px
-import plotly.graph_objects as go
-import seaborn as sns
-import streamlit as st
-import altair as alt
-from altair import Row, Column, Chart, Text, Scale, Color
-from streamlit.report_thread import add_report_ctx
-import streamlit.components.v1 as components
+import panel as pn
+import pathlib
+import time
 import base64
+from pylab import *
+from os import truncate, write
+
+import streamlit as st
+import streamlit.components.v1 as components
+from streamlit.report_thread import add_report_ctx
+
+import altair as alt
+from altair.vegalite.v4.schema.channels import Tooltip
+from altair import Row, Column, Chart, Text, Scale, Color
+
+import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.cm as cm
 import matplotlib as mpl
-import matplotlib.pyplot as plt 
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+import plotly.express as px
+import plotly.offline as py
+import plotly.graph_objects as go
+from plotly import tools
+
+import seaborn as sns
 import plotnine as p9
 import bqplot
+
 from ipywidgets import Layout
 from ipywidgets import widgets
 from IPython.display import display
-from plotly import tools
-import plotly.offline as py
+
 import cufflinks as cf
 import chart_studio
+import holoviews as hv 
+from holoviews import opts
+
 from bokeh.io import show, output_notebook, output_file
+from bokeh.plotting import figure, show, save
+from bokeh.palettes import BuPu
+from bokeh.layouts import row
+from bokeh.models import CustomJS
 from bokeh.models import (
     ColumnDataSource,
     HoverTool,
@@ -39,20 +53,17 @@ from bokeh.models import (
     ColorBar,
     FactorRange
 )
-from bokeh.plotting import figure, show, save
-from bokeh.palettes import BuPu
-from bokeh.layouts import row
-from bokeh.models import CustomJS
-import holoviews as hv 
-from holoviews import opts
-import time
 
 # Modo de Ejecucion:
 # streamlit run testheatmap.py
-
 debugInfo = True
 
-
+'''
+Para mi muestra genero un dataset con valores semanales entre 1920 y 2020 (48 semanas x 100 años) y lo populo con valores
+aleatorios interos.
+retorno el dataset original y la version matricial para las librerias que utilian una matriz para general el grafico. Esto
+lo hago con un simple pivot sobre las dos primeras columnas dejando la tercera como el dato a mostrar en cada celda del mapa de calor
+'''
 def generateDf():
     df = pd.DataFrame()
     rows = []
@@ -231,6 +242,9 @@ def displayAltair(df):
     st.altair_chart(chart)
 
 
+'''
+Uso un "decorator" para mostrar en cada funcion de graficacion el tamaño del dataset y el tiempo que tarda en generarse
+'''
 def timing(func, df):
     global debugInfo
     ta0 = time.time()
@@ -242,6 +256,9 @@ def timing(func, df):
         st.write('##')
 
 
+'''
+Esta funcion convierte una paleta de colores de matplotlib (CMAP) en una lista de colores RGB que utilizan algunas de las librerias
+'''
 @st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def cmap2rgb(mycmap):
     sourcecmap = cm.get_cmap(mycmap, 5) 
@@ -253,20 +270,24 @@ def cmap2rgb(mycmap):
     return scheme
 
 
-# Setting Cache for dataset:
-@st.cache(allow_output_mutation=True, suppress_st_warning=True)
-def load_dataset(myfile ):
-    df = pd.read_csv(myfile, sep=';')
-    return df
-
-
+'''
+Dos custom made separadores, uno para el frame principal y otro para el sidebar
+'''
 def sep():
     st.markdown('<hr style="height:2px;border-width:0;color:gray;background-color:blue">', unsafe_allow_html=True)
-
 
 def sepS():
     st.sidebar.markdown('<hr style="height:2px;border-width:0;color:gray;background-color:blue">', unsafe_allow_html=True)
 
+
+'''
+Setting Cache for dataset:
+lo uso para cargar el dataset desde un archivo .CSV
+'''
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+def load_dataset(myfile ):
+    df = pd.read_csv(myfile, sep=';')
+    return df
 
 def getFile():
     sepS()
@@ -288,6 +309,11 @@ def main():
     st.write('In case of using an input .CSV file, it must respect the order **Data X**; **Data Y**; **Value**.\
                 The name of the columns does not matter.')
 
+
+    '''
+    Estas son las principales paletas de colores obtenidas desde matplotlib, las guardo en una lista para poder
+    mostrar y seleccionar desde un listbox:
+    '''
     cmaps = [
             'Blues', 'Oranges', 'Purples', 'Greys', 'Greens', 'Reds',           #Sequential
             'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
@@ -307,32 +333,58 @@ def main():
             'gist_rainbow', 'rainbow', 'jet', 'turbo', 'nipy_spectral',
             'gist_ncar']
 
+
+    '''
+    Algunas variables globales (horror!), pero necesaria para que todas las funciones que grafican mantengan la misma estructura
+    '''
     global mycmaps 
     global myscheme
     global colName0
     global colName1
     global colName2
 
+    '''
+    Genero el dataset aleatorio:
+    '''
     df, dfmat = generateDf()
 
+
+    '''
+    Aca posiciono el selectbox para elegir la paleta a usar en las graficas, y la convierto a un  "scheme" que
+    utilizan algunas de las librerias. Un "scheme" es basicamente una lista de colores RGB.
+    '''
     mycmaps = st.sidebar.selectbox('🎨 Select Palette (Matplotlib):', cmaps)
     link = "[matplotlib](https://matplotlib.org/stable/tutorials/colors/colormaps.html)"
     st.sidebar.markdown(link, unsafe_allow_html=True)
     myscheme = cmap2rgb(mycmaps)
     myfile = getFile()
 
+
+    '''
+    Si el dataset proviene desde un archivo, lo cargo y genero la forma matricial del mismo:
+    '''
     if myfile is not None:
         df = load_dataset(myfile)
         dfmat = df.pivot(df.columns[1], df.columns[0], df.columns[2])
     
+
+    '''
+    Boton para generar un nuevo dataset de forma random
+    '''
     if st.sidebar.button('🎲 Generate Random'):
         if myfile is None:
             df, dfmat = generateDf()
     
+    '''
+    En caso de que el dataset lo obtenga desde un archivo, guardo el nombre de cada columna para las etiquetas de los graficos:
+    '''
     colName0 = df.columns[0]
     colName1 = df.columns[1]
     colName2 = df.columns[2] 
 
+    ''' 
+    Genero un "preview" del dataset original y de la matriz
+    '''
     sep()
     col1, col2 = st.beta_columns(2)
     col1.write("*Original* Dataset preview:")
@@ -341,6 +393,10 @@ def main():
     col2.write(dfmat.head(15))
     sep()
 
+
+    '''
+    Cada checkbox activa el heatmap de cada libreria grafica
+    '''
     if st.checkbox("display Altair"):
         timing(displayAltair, df)
     if st.checkbox("display Holoviews"):
