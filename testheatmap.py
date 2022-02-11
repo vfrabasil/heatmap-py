@@ -29,7 +29,7 @@ import plotnine as p9
 import bqplot
 from ipywidgets import Layout
 from ipywidgets import widgets
-from IPython.display import display
+#from IPython.display import display
 
 from plotly import tools
 import plotly.offline as py
