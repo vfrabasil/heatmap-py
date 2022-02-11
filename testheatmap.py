@@ -1,23 +1,23 @@
-from __future__ import absolute_import
-from os import truncate, write
+#from __future__ import absolute_import
+#from os import truncate, write
 import pathlib
 import panel as pn
 
-from altair.vegalite.v4.schema.channels import Tooltip
+#from altair.vegalite.v4.schema.channels import Tooltip
 import numpy as np
 import pandas as pd
-from pylab import *
+#from pylab import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import plotly.express as px
+#import plotly.express as px
 import plotly.graph_objects as go
 import seaborn as sns
 import streamlit as st
 import altair as alt
-from altair import Row, Column, Chart, Text, Scale, Color
+#from altair import Row, Column, Chart, Text, Scale, Color
 #from streamlit.report_thread import add_report_ctx
 import streamlit.components.v1 as components
-import base64
+#import base64
 
 import matplotlib.ticker as ticker
 import matplotlib.cm as cm
@@ -27,15 +27,15 @@ import matplotlib.pyplot as plt
 import plotnine as p9
 
 import bqplot
-from ipywidgets import Layout
-from ipywidgets import widgets
+##from ipywidgets import Layout
+##from ipywidgets import widgets
 #from IPython.display import display
 
-from plotly import tools
-import plotly.offline as py
+#from plotly import tools
+#import plotly.offline as py
 
 import cufflinks as cf
-import chart_studio
+## import chart_studio
 
 
 from bokeh.io import show, output_notebook, output_file
@@ -379,7 +379,7 @@ def cmap2rgb(mycmap):
     for i in range(sourcecmap.N):
         rgba = sourcecmap(i)
         # rgb2hex accepts rgb or rgba
-        scheme.append(matplotlib.colors.rgb2hex(rgba))
+        scheme.append(mpl.colors.rgb2hex(rgba))
     return scheme
 
 
