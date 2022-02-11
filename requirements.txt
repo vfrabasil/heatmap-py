@@ -9,5 +9,5 @@ plotly==4.14.3
 bqplot==0.12.29
 numpy==1.19.3
 plotnine==0.8.0
-
+cufflinks==0.17.3
 
