@@ -490,11 +490,21 @@ def main():
         if myfile is None:
             df, dfmat = generateDf()
             
-    sepS()
+    #with st.sidebar.expander("About:", expanded=False):
+        #link = " Made by [Victor Frabasil](https://www.linkedin.com/in/victorfrabasil/)"
+        #st.sidebar.markdown(link, unsafe_allow_html=True)
 
-    with st.sidebar.expander("About:", expanded=False):
-        link = " Made by [Victor Frabasil](https://www.linkedin.com/in/victorfrabasil/)"
-        st.sidebar.markdown(link, unsafe_allow_html=True)
+    sepS()        
+    about_me =  """
+    ## Connect:
+    [![Victor1](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logoColor=white&logo=linkedin)](https://www.linkedin.com/in/victorfrabasil/)
+    \n
+    [![Victor2](https://img.shields.io/badge/Author-@VictorFrabasil-gray.svg?colorA=gray&colorB=dodgergreen&logo=github)](https://www.github.com/vfrabasil/)
+    """
+    st.sidebar.markdown(about_me)
+
+
+
 
     #def download_csv(name, df):
     #    #csv = df.to_csv(index=False)
